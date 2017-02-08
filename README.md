@@ -3,7 +3,7 @@
 simple http final responder
 
 ```shell
-npm install --save http-respond
+npm install --save http-sender
 ```
 
 inspired by [`finalhandler`](https://github.com/pillarjs/finalhandler) and [`yoshuawuyts/merry`](https://github.com/yoshuawuyts/merry)
@@ -12,10 +12,10 @@ inspired by [`finalhandler`](https://github.com/pillarjs/finalhandler) and [`yos
 
 ```js
 const http = require('http')
-const respond = require('http-respond')()
+const sender = require('http-sender')()
 
 http.createServer((req, res) => {
-  const send = respond(req, res)
+  const send = sender(req, res)
   console.log(req.url)
   switch (req.url) {
     case '/': return send(null, 'home')
@@ -28,11 +28,11 @@ http.createServer((req, res) => {
 
 ## usage
 
-### `Respond = require('http-respond')`
+### `Sender = require('http-sender')`
 
-### `respond = Respond(options)`
+### `sender = Sender(options)`
 
-### `send = respond(req, res)`
+### `send = sender(req, res)`
 
 ### `send(err, value)`
 

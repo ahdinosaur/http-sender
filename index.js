@@ -8,9 +8,9 @@ const toNodeStream = require('pull-stream-to-stream')
 const pump = require('pump')
 const serverSink = require('server-sink')
 
-module.exports = respond
+module.exports = Sender
 
-function respond (options = {}) {
+function Sender (options = {}) {
   const {
     value: valueResponder = defaultValueResponder,
     error: errorResponder = defaultErrorResponder,
@@ -18,8 +18,8 @@ function respond (options = {}) {
     log = defaultLog
   } = options
 
-  return function httpFinalResponder (req, res) {
-    return (err, value) => {
+  return function sender (req, res) {
+    return function send (err, value) {
       if (err) errorResponder(req, res, err)
       else if (value) valueResponder(req, res, value)
       else notFoundResponder(req, res)

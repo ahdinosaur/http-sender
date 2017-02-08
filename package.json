@@ -1,5 +1,5 @@
 {
-  "name": "http-respond",
+  "name": "http-sender",
   "version": "1.0.0",
   "description": "simple http final responder",
   "main": "index.js",
@@ -19,15 +19,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ahdinosaur/http-respond.git"
+    "url": "git+https://github.com/ahdinosaur/http-sender.git"
   },
   "keywords": [],
   "author": "Mikey <michael.williams@enspiral.com> (http://dinosaur.is)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ahdinosaur/http-respond/issues"
+    "url": "https://github.com/ahdinosaur/http-sender/issues"
   },
-  "homepage": "https://github.com/ahdinosaur/http-respond#readme",
+  "homepage": "https://github.com/ahdinosaur/http-sender#readme",
   "devDependencies": {
     "dependency-check": "^2.7.0",
     "node-dev": "^3.1.3",
