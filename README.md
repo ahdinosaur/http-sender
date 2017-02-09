@@ -1,4 +1,4 @@
-# http-respond
+# http-sender
 
 simple http final responder
 
