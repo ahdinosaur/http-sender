@@ -28,6 +28,14 @@ function Sender (options = {}) {
 
   function defaultValueResponder (req, res, value) {
     var stream = null
+
+    // HACK check if SendStream from `send` module
+    // TODO: the better way is if `server-sink` added a proxy
+    // for res.setHeader on the stream returned
+    if (value && value.pipe && value.sendFile) {
+      return value.pipe(res)
+    }
+
     if (isNodeStream.readable(value)) {
       stream = value
     } else if (isPull.isSource(value)) {
