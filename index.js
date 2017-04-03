@@ -2,11 +2,12 @@ const finalHandler = require('finalhandler')
 const HttpError = require('http-errors')
 const isNodeStream = require('is-stream')
 const isPull = require('is-pull-stream')
-const stringToNodeStream = require('from2-string')
+const codeToNodeStream = require('from2-encoding')
 const jsonStringify = require('fast-safe-stringify')
 const toNodeStream = require('pull-stream-to-stream')
 const pump = require('pump')
 const serverSink = require('server-sink')
+const typeofIs = require('typeof-is')
 
 module.exports = Sender
 
@@ -32,13 +33,15 @@ function Sender (options = {}) {
       stream = value
     } else if (isPull.isSource(value)) {
       stream = toNodeStream.source(value)
-    } else if (isObject(value)) {
+    } else if (Buffer.isBuffer(value)) {
+      stream = codeToNodeStream(value, 'binary')
+    } else if (typeofIs.string(value)) {
+      stream = codeToNodeStream(value, 'utf8')
+    } else if (typeofIs.object(value)) {
       if (!res.getHeader('content-type')) {
         res.setHeader('content-type', 'application/json')
       }
-      stream = stringToNodeStream(jsonStringify(value))
-    } else if (isString(value)) {
-      stream = stringToNodeStream(value)
+      stream = codeToNodeStream(jsonStringify(value), 'utf8')
     }
     var sink = serverSink(req, res, msg => log.info(msg))
     if (stream) {
@@ -70,6 +73,3 @@ const defaultLog = {
   info: console.log.bind(console),
   warn: console.error.bind(console)
 }
-
-function isObject (o) { return typeof o === 'object' }
-function isString (o) { return typeof o === 'string' }
