@@ -70,6 +70,6 @@ function Sender (options = {}) {
 }
 
 const defaultLog = {
-  info: console.log.bind(console),
-  warn: console.error.bind(console)
+  info: console.log,
+  warn: console.warn
 }
