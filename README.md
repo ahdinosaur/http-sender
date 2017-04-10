@@ -6,8 +6,6 @@ simple http final responder
 npm install --save http-sender
 ```
 
-inspired by [`finalhandler`](https://github.com/pillarjs/finalhandler) and [`yoshuawuyts/merry`](https://github.com/yoshuawuyts/merry)
-
 ## example
 
 ```js
@@ -32,9 +30,27 @@ http.createServer((req, res) => {
 
 ### `sender = Sender(options)`
 
+`options`:
+
+- `value`: function with shape `(req, res, value)`
+- `error`: function with shape `(req, res, error)`
+- `notFound`: function with shape `(req, res)`
+- `logger`: a [`pino-http`](https://github.com/pinojs/pino-http)-compatible http logger instance
+
 ### `send = sender(req, res)`
 
 ### `send(err, value)`
+
+## complementary modules
+
+- [`ahdinosaur/http-sender`](https://github.com/ahdinosaur/http-sender)
+- [`ahdinosaur/http-routes`](https://github.com/ahdinosaur/http-routes)
+
+## related modules
+
+- [`finalhandler`](https://github.com/pillarjs/finalhandler)
+- [`creationix/stack`](https://github.com/creationix/stack)
+- [`yoshuawuyts/nanostack`](https://github.com/yoshuawuyts/nanostack)
 
 ## license
 
