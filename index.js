@@ -1,13 +1,11 @@
-const finalHandler = require('finalhandler')
-const HttpError = require('http-errors')
-const isNodeStream = require('is-stream')
-const isPull = require('is-pull-stream')
-const codeToNodeStream = require('from2-encoding')
-const jsonStringify = require('fast-safe-stringify')
-const toNodeStream = require('pull-stream-to-stream')
-const pump = require('pump')
-const serverSink = require('server-sink')
 const typeofIs = require('typeof-is')
+const jsonStringify = require('fast-safe-stringify')
+const HttpError = require('http-errors')
+const finalHandler = require('finalhandler')
+const pull = require('pull-stream/pull')
+const { source: isSourcePullStream } = require('is-pull-stream')
+const { sink: toSinkPullStream } = require('stream-to-pull-stream')
+const pump = require('pump')
 
 module.exports = Sender
 
@@ -16,10 +14,11 @@ function Sender (options = {}) {
     value: valueResponder = defaultValueResponder,
     error: errorResponder = defaultErrorResponder,
     notFound: notFoundResponder = defaultNotFoundResponder,
-    log = defaultLog
+    logger
   } = options
 
   return function sender (req, res) {
+    if (logger) logger(req, res)
     return function send (err, value) {
       if (err) errorResponder(req, res, err)
       else if (value) valueResponder(req, res, value)
@@ -28,48 +27,40 @@ function Sender (options = {}) {
   }
 
   function defaultValueResponder (req, res, value) {
-    var stream = null
-    if (isNodeStream.readable(value)) {
-      stream = value
-    } else if (isPull.isSource(value)) {
-      stream = toNodeStream.source(value)
+    const errorHandler = ifError(err => errorResponder(req, res, err))
+
+    if (isReadableNodeStream(value)) {
+      pump(value, res, errorHandler)
+    } else if (isSourcePullStream(value)) {
+      pull(value, toSinkPullStream(res, errorHandler))
     } else if (Buffer.isBuffer(value)) {
-      stream = codeToNodeStream(value, 'binary')
+      res.end(value)
     } else if (typeofIs.string(value)) {
-      stream = codeToNodeStream(value, 'utf8')
+      res.end(value)
     } else if (typeofIs.object(value)) {
       if (!res.getHeader('content-type')) {
         res.setHeader('content-type', 'application/json')
       }
-      stream = codeToNodeStream(jsonStringify(value), 'utf8')
-    }
-    var sink = serverSink(req, res, msg => log.info(msg))
-    if (stream) {
-      pump(stream, sink, err => {
-        if (err) errorResponder(req, res, err)
-      })
+      res.end(jsonStringify(value))
     } else {
       res.end()
     }
   }
 
   function defaultErrorResponder (req, res, err) {
-    finalHandler(req, res, { onerror: onError })(err)
+    finalHandler(req, res)(err)
   }
 
   function defaultNotFoundResponder (req, res) {
     const err = HttpError.NotFound()
     defaultErrorResponder(req, res, err)
   }
-
-  function onError (err, req, res) {
-    if (res.statusCode === 500) {
-      log.warn(err)
-    }
-  }
 }
 
-const defaultLog = {
-  info: console.log,
-  warn: console.warn
+function ifError (cb) {
+  return (err) => err && cb(err)
+}
+
+function isReadableNodeStream (value) {
+  return value && !typeofIs.undefined(value.pipe)
 }
