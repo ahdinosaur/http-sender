@@ -12,12 +12,10 @@ function Sender (options = {}) {
   const {
     value: valueResponder = defaultValueResponder,
     error: errorResponder = defaultErrorResponder,
-    notFound: notFoundResponder = defaultNotFoundResponder,
-    logger
+    notFound: notFoundResponder = defaultNotFoundResponder
   } = options
 
   return function sender (req, res) {
-    if (logger) logger(req, res)
     return function send (err, value) {
       if (err) errorResponder(req, res, err)
       else if (value) valueResponder(req, res, value)
@@ -72,13 +70,11 @@ function Sender (options = {}) {
 
     if (err.expose) {
       // expected errors
-      var errorResponse
-      for (const key in httpError) {
-        if (!httpErrorKeys.includes(key)) {
-          errorResponse[key] = httpError[key]
-        }
-      }
-      valueResponder({ error: errorResponse })
+      var errorResponse = {}
+      Object.getOwnPropertyNames(httpError)
+        .filter(key => !httpErrorKeys.includes(key))
+        .forEach(key => errorResponse[key] = httpError[key])
+      valueResponder(req, res, { error: errorResponse })
     } else {
       // unexpected errors
       if (!res.finished) {
@@ -88,11 +84,14 @@ function Sender (options = {}) {
           }
         }))
       }
-      // logger (pino-http) is listening to error event
-       if (logger) res.emit('error', err)
+
+      if (res.listenerCount('error') > 0) {
+         res.emit('error', err)
+      }
 
       // HACK this is the only way for pino-colada to notice
-      if (logger) logger.logger.fatal(err)
+      if (res && res.log && res.log.fatal) res.log.fatal(err)
+
       res.end()
     }
   }
@@ -115,5 +114,6 @@ const httpErrorKeys = [
   'expose',
   'headers',
   'status',
-  'statusCode'
+  'statusCode',
+  'stack'
 ]
