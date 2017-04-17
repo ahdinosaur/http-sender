@@ -40,7 +40,6 @@
   "dependencies": {
     "es2040": "^1.2.3",
     "fast-safe-stringify": "^1.1.6",
-    "finalhandler": "^0.5.1",
     "http-errors": "^1.5.1",
     "is-pull-stream": "0.0.0",
     "pull-stream": "^3.5.0",
